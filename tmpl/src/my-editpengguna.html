@@ -1,0 +1,210 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-editpengguna">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        /* padding: 10px; */
+      }
+      .button{
+        background-color:var(--app-primary-color);
+        color:black;
+      }
+    </style>
+
+    <iron-ajax
+    id= "ajax"
+    handle-as="json"
+    on-response="handleResponse"
+    on-error="errorResponse"></iron-ajax>
+
+    <app-header-layout has-scrolling-region style="width:100%; height:100vh;">
+      <!-- HEADER -->
+      <app-header class="header" slot="header" fixed affects="waterfall">
+        <app-toolbar>
+          <paper-icon-button on-tap="close" icon="close"></paper-icon-button>
+          <div main-title>Input Tambah User</div>
+          <paper-icon-button on-tap="delete" icon="delete"></paper-icon-button>
+        </app-toolbar>
+
+      <div class="content" style="padding:10px;">
+      <!-- <paper-input id= "npm" label="NPM"  auto-validate required char-counter minlenght=1 pattern="[a-zA-Z0-9]"></paper-input> -->
+      <paper-input id= "nama" label="Nama"></paper-input>
+      <paper-input  id= "username" label="Username"></paper-input>
+      <paper-input id= "password" label="Password"></paper-input>
+      <paper-input id= "ulangipassword" label="Ulangi Password"></paper-input>
+      <paper-dropdown id="aktifasi" label="Aktifasi" value="{{value}}">
+        <paper-item value="Y">Y</paper-item>
+        <paper-item value="T">T</paper-item>
+      </paper-dropdown><br>
+      <paper-button on-tap="_submit" class="confirm">Submit</paper-button>
+    </div>
+  </app-header-layout>
+  </template>
+
+
+  <script>
+    class MyEditpengguna extends Polymer.Element {
+      static get is() { return 'my-editpengguna'; }
+      static get properties() {
+        return {
+          datapengguna:Object,
+          route:{
+            type:Object,
+            observer:'_reload',
+          },
+        }
+      }
+
+        add(e){
+          window.history.pushState({}, null,'#/editpengguna/0');
+          window.dispatchEvent(new CustomEvent('location-changed'));
+        }
+
+        close(e){
+          window.history.pushState({}, null,'#/pengguna/0');
+          window.dispatchEvent(new CustomEvent('location-changed'));
+        }
+
+        delete(e){
+          this.$.ajax.url = 'api/pengguna/'+this.headerID;
+          this.$.ajax.method= 'DELETE';
+          this.$.ajax.generateRequest();
+
+          window.history.pushState({}, null,'#/editpengguna/0');
+          window.dispatchEvent(new CustomEvent('location-changed'));
+        }
+
+        _reload(e){
+          let path = e.path;
+          let datapengguna= path.split('/');
+          if(datapengguna[1] !== 'editpengguna'){
+            return;
+          }
+          if(datapengguna[2]){
+            this.headerID = datapengguna[2];
+            if(datapengguna[2]==='0'){
+            this.$.nama.value = '';
+            this.$.username.value = '';
+            this.$.password.value = '';
+            this.$.ulangipassword.value = '';
+            this.$.aktifasi.value;
+            return;
+          }
+          let urlData = 'api/pengguna/'+datapengguna[2];
+          this.$.ajax.url = urlData;
+          this.$.ajax.method ='GET';
+          this.$.ajax.generateRequest();
+        }
+        console.log(datapengguna);
+      }
+
+        _submit(e){
+          let nama = this.$.nama.value;
+          let username = this.$.username.value;
+          let password = this.$.password.value;
+          let ulangipassword = this.$.ulangipassword.value;
+          let aktifasi = this.$.aktifasi.value;
+          let datapenggunaUrl = 'api/pengguna';
+          let datapengguna ={};
+          if(this.headerID == "0"  || typeof this.headerID ==='undefined'){
+            datapengguna = {
+              nama: nama,
+              username: username,
+              password: password,
+              ulangipassword:ulangipassword,
+              aktifasi: aktifasi,
+            }
+            this.$.ajax.method = 'POST';
+          }else {
+            datapengguna={
+              username: username,
+              password: password,
+              ulangipassword:ulangipassword,
+              aktifasi: aktifasi,
+            }
+            this.$.ajax.method = 'PUT';
+            datapenggunaUrl += '/' +nama;
+          }
+          this.$.ajax.url = datapenggunaUrl;
+          let json =JSON.stringify(datapengguna);
+          this.$.ajax.body = json;
+          this.$.ajax.generateRequest();
+        }
+
+
+        handleResponse(e){
+          if(this.headerID === '0' || typeof this.headerID === 'undefined'){
+            window.history.pushState({}, null,'#/pengguna/0');
+            window.dispatchEvent(new CustomEvent('location-changed'));
+          }
+          let datapengguna = e.detail.response;
+          if(!datapengguna){
+            return;
+          }
+          this.$.nama.value = datapengguna.nama;
+          this.$.username.value = datapengguna.username;
+          this.$.password.value = datapengguna.password;
+          this.$.ulangipassword.value = datapengguna.ulangipassword;
+          this.$.aktifasi.value = datapengguna.aktifasi;
+          console.log(this.headerID);
+
+        }
+
+        errorResponse(e){
+          let myApp = document.querySelector('my-app');
+          let toast = myApp.shadowRoot.querySelector('#toast');
+          console.log(myApp);
+          console.log(toast);
+          let message = e.detail.error.message;
+          toast.setAttribute('text', message);
+          toast.open();
+        }
+
+
+    _onChange(){
+      let nama = this.shadowRoot.querySelector('#nama').value;
+      this.shadowRoot.querySelector("#outputnama").innerHTML = nama;
+    }
+
+    _onChangeUsername(){
+    let username = this.shadowRoot.querySelector('#username').value;
+    this.shadowRoot.querySelector("#outputusername").innerHTML = username;
+    }
+
+    _onChangePassword(){
+      let password = this.shadowRoot.querySelector('#password').value;
+      this.shadowRoot.querySelector("#outputpassword").innerHTML = password;
+    }
+
+      _onChangeUlangipassword(){
+      let ulangipassword = this.shadowRoot.querySelector('#ulangipassword').value;
+      this.shadowRoot.querySelector("#outputulangipassword").innerHTML = ulangipassword;
+    }
+
+    _onChangeAktifasi(){
+    let aktifasi = this.shadowRoot.querySelector('#aktifasi').value;
+    this.shadowRoot.querySelector("#outputaktifasi").innerHTML = aktifasi;
+  }
+}
+
+    window.customElements.define(MyEditpengguna.is, MyEditpengguna);
+  </script>
+</dom-module>

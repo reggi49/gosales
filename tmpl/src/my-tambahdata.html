@@ -1,0 +1,274 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-tambahdata">
+  <template>
+    <style include="shared-styles">
+
+      :host {
+        display: block;
+
+        /* padding: 10px; */
+      }
+      .button{
+        background-color:var(--app-primary-color);
+        color:black;
+      }
+      .add{
+        color:#fff;
+      }
+    </style>
+
+    <iron-ajax
+    id= "ajax"
+    handle-as="json"
+    on-response="handleResponse"
+    on-error="errorResponse"></iron-ajax>
+
+    <app-header-layout has-scrolling-region style="width:100%; height:100vh;">
+      <!-- HEADER -->
+      <app-header class="header" slot="header" fixed affects="waterfall">
+        <app-toolbar>
+          <paper-icon-button on-tap="close" icon="close" class="add"></paper-icon-button>
+          <div main-title>Input Persediaan Barang</div>
+          <paper-icon-button on-tap="delete" icon="delete" class="add"></paper-icon-button>
+        </app-toolbar>
+
+      <div class="content" style="padding:10px;">
+      <!-- <paper-input id= "npm" label="NPM"  auto-validate required char-counter minlenght=1 pattern="[a-zA-Z0-9]"></paper-input> -->
+      <paper-input id= "nopol" label="Nopol"></paper-input>
+      <vaadin-date-picker id= "tgl_masuk" label="Tgl_masuk"></vaadin-date-picker><br>
+      <paper-dropdown id="merk" label="Merk" value="{{value}}">
+        <paper-item value="kawasaki">KAWASAKI</paper-item>
+        <paper-item value="honda">HONDA</paper-item>
+        <paper-item value="yamaha">YAMAHA</paper-item>
+      </paper-dropdown>
+      <paper-input id= "tahun" label="Tahun"></paper-input>
+      <paper-input id= "harga_modal" label="Harga_modal"></paper-input>
+      <paper-input id= "harga_jual" label="Harga_jual"></paper-input>
+      <paper-input id= "suplier" label="Suplier"></paper-input>
+      <paper-input id= "telp" label="Telp"></paper-input>
+      <paper-textarea id="alamat" label="Alamat"></paper-textarea>
+      <paper-textarea id="deskripsi" label="Deskripsi"></paper-textarea>
+      <paper-button on-tap="_submit" class="confirm">Submit</paper-button>
+    </div>
+  </app-header-layout>
+  </template>
+
+
+  <script>
+    class MyTambahdata extends Polymer.Element {
+      static get is() { return 'my-tambahdata'; }
+      static get properties() {
+        return {
+          data:Object,
+          route:{
+            type:Object,
+            observer:'_reload',
+          },
+        }
+      }
+
+        add(e){
+          window.history.pushState({}, null,'#/tambahdata/0');
+          window.dispatchEvent(new CustomEvent('location-changed'));
+        }
+
+        close(e){
+          window.history.pushState({}, null,'#/barang/0');
+          window.dispatchEvent(new CustomEvent('location-changed'));
+        }
+
+        delete(e){
+          this.$.ajax.url = 'api/barang/'+this.headerID;
+          this.$.ajax.method= 'DELETE';
+          this.$.ajax.generateRequest();
+
+          window.history.pushState({}, null,'#/tambahdata/0');
+          window.dispatchEvent(new CustomEvent('location-changed'));
+        }
+
+        _reload(e){
+          let path = e.path;
+          let data= path.split('/');
+          if(data[1] !== 'tambahdata'){
+            return;
+          }
+          if(data[2]){
+            this.headerID = data[2];
+            if(data[2]==='0'){
+            this.$.nopol.value = '';
+            this.$.tgl_masuk.value = '';
+            this.$.merk.value = '';
+            this.$.tahun.value = '';
+            this.$.harga_modal.value;
+            this.$.harga_jual.value;
+            this.$.suplier.value;
+            this.$.telp.value;
+            this.$.alamat.value;
+            this.$.deskripsi.value;
+            return;
+          }
+          let urlData = 'api/barang/'+data[2];
+          this.$.ajax.url = urlData;
+          this.$.ajax.method ='GET';
+          this.$.ajax.generateRequest();
+        }
+        console.log(data);
+      }
+
+        _submit(e){
+          let nopol = this.$.nopol.value;
+          let tgl_masuk = this.$.tgl_masuk.value+"T00:00:00Z";
+          let merk = this.$.merk.value;
+          let tahun = parseInt(this.$.tahun.value);
+          let harga_modal = parseInt(this.$.harga_modal.value);
+          let harga_jual = parseInt(this.$.harga_jual.value);
+          let suplier = this.$.suplier.value;
+          let telp = parseInt(this.$.telp.value);
+          let alamat = this.$. alamat.value;
+          let deskripsi = this.$.deskripsi.value;
+          let dataUrl = 'api/barang';
+          let data ={};
+          if(this.headerID == "0"  || typeof this.headerID ==='undefined'){
+            data = {
+              nopol: nopol,
+              tgl_masuk: tgl_masuk,
+              merk: merk,
+              tahun:tahun,
+              harga_modal: harga_modal,
+              harga_jual: harga_jual,
+              suplier: suplier,
+              telp: telp,
+              alamat: alamat,
+              deskripsi: deskripsi,
+            }
+            this.$.ajax.method = 'POST';
+          }else {
+            data={
+              tgl_masuk:tgl_masuk,
+              merk:merk,
+              tahun:tahun,
+              harga_modal: harga_modal,
+              harga_jual: harga_jual,
+              suplier: suplier,
+              telp: telp,
+              alamat: alamat,
+              deskripsi: deskripsi,
+            }
+            this.$.ajax.method = 'PUT';
+            dataUrl += '/' +nopol;
+          }
+          this.$.ajax.url = dataUrl;
+          let jsondata =JSON.stringify(data);
+          this.$.ajax.body = jsondata;
+          this.$.ajax.generateRequest();
+          console.log(jsondata);
+        }
+
+
+        handleResponse(e){
+          if(this.headerID === '0' || typeof this.headerID === 'undefined'){
+            window.history.pushState({}, null,'#/barang/0');
+            window.dispatchEvent(new CustomEvent('location-changed'));
+          }
+          let data = e.detail.response;
+          if(!data){
+            return;
+          }
+
+          this.$.nopol.value = data.nopol;
+          this.$.tgl_masuk.value = data.tgl_masuk;
+          this.$.merk.value = data.merk;
+          this.$.tahun.value = data.tahun;
+          this.$.harga_modal.value = data.harga_modal;
+          this.$.harga_jual.value = data.harga_jual ;
+          this.$.suplier.value = data.suplier;
+          this.$.telp.value = data.telp ;
+          this.$. alamat.value = data.alamat;
+          this.$.deskripsi.value = data.deskripsi;
+          console.log(this.headerID);
+
+        }
+
+        errorResponse(e){
+          let myApp = document.querySelector('my-app');
+          let toast = myApp.shadowRoot.querySelector('#toast');
+          console.log(myApp);
+          console.log(toast);
+          let message = e.detail.error.message;
+          toast.setAttribute('text', message);
+          toast.open();
+        }
+
+
+    _onChange(){
+      let nopol = this.shadowRoot.querySelector('#nopol').value;
+      this.shadowRoot.querySelector("#outputnopol").innerHTML = nopol;
+    }
+
+    _onChangeTgl_masuk(){
+    let tgl_masuk = this.shadowRoot.querySelector('#tgl_masuk').value;
+    this.shadowRoot.querySelector("#outputtgl_masuk").innerHTML = tgl_masuk;
+    }
+
+    _onChangeMerk(){
+      let merk = this.shadowRoot.querySelector('#merk').value;
+      this.shadowRoot.querySelector("#outputmerk").innerHTML = merk;
+    }
+
+      _onChangeTahun(){
+      let tahun = this.shadowRoot.querySelector('#tahun').value;
+      this.shadowRoot.querySelector("#outputtahun").innerHTML = tahun;
+    }
+
+    _onChangeHarga_modal(){
+    let harga_modal = this.shadowRoot.querySelector('#harga_modal').value;
+    this.shadowRoot.querySelector("#outputharga_modal").innerHTML = harga_modal;
+  }
+
+  _onChangeHarga_jual(){
+  let harga_jual = this.shadowRoot.querySelector('#harga_jual').value;
+  this.shadowRoot.querySelector("#outputharga_jual").innerHTML = harga_jual;
+  }
+
+  _onChangeSuplier(){
+  let suplier = this.shadowRoot.querySelector('#suplier').value;
+  this.shadowRoot.querySelector("#outputsuplier").innerHTML = suplier;
+  }
+
+  _onChangeTelp(){
+  let telp = this.shadowRoot.querySelector('#telp').value;
+  this.shadowRoot.querySelector("#outputtelp").innerHTML = telp;
+  }
+
+  _onChangeAlamat(){
+  let alamat = this.shadowRoot.querySelector('#alamat').value;
+  this.shadowRoot.querySelector("#outputalamat").innerHTML = alamat;
+  }
+
+  _onChangeDeskripsi(){
+  let deskripsi = this.shadowRoot.querySelector('#deskripsi').value;
+  this.shadowRoot.querySelector("#outputdeskripsi").innerHTML = deskripsi;
+  }
+}
+
+    window.customElements.define(MyTambahdata.is, MyTambahdata);
+  </script>
+</dom-module>

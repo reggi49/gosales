@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/thanhngvpt/famcost",
+	"ImportPath": "github.com/thanhngvpt/gosales",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v75",
 	"Packages": [

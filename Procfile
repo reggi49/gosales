@@ -1,1 +1,1 @@
-web: famcost
+web: gosales

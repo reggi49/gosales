@@ -1,0 +1,196 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
+
+
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-pengguna">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        /* padding: 10px; */
+      }
+      .button{
+        background-color:var(--app-primary-color);
+        color:black;
+
+      }
+
+      .member{
+        width: 100%;
+      }
+
+      .horizontal{
+          @apply --layout-horizontal;
+      }
+
+      .vertical{
+        @apply --layout-vertical;
+      }
+    </style>
+
+    <iron-ajax
+    id= "ajax"
+    url="api/pengguna"
+    method="get"
+    handle-as="json"
+    on-response="handleResponse"
+    on-error="errorResponse"></iron-ajax>
+
+    <iron-media-query query="(max-width: 600px)" query-matches="{{mobile}}"></iron-media-query>
+
+    <template is="dom-if" if="{{!mobile}}">
+      <app-header-layout has-scrolling-region style="width:100%; height:100vh;">
+        <!-- HEADER -->
+        <app-header class="header" slot="header" fixed affects="waterfall">
+          <app-toolbar>
+            <div main-title>DTS Bintang Motor</div>
+
+          </app-toolbar>
+          <div style="border-bottom:1px solid #aaa;"></div>
+          <app-toolbar>
+            <div class="horizontal" style="width:100%;">
+              <div class="member">Aktivasi</div>
+              <div class="member">Nama</div>
+              <div class="member">Username</div>
+              <div class="member">Tanggal Daftar</div>
+            </div>
+            <paper-icon-button on-tap="add" icon="add-circle"></paper-icon-button>
+          </app-toolbar>
+        </app-header>
+
+      <div class="content">
+        <iron-list items="[[datapengguna]]" as="item" class="vertical">
+      <template>
+        <a href="#/editpengguna/[[item.username]]" tabindex="-1">
+          <paper-item class="horizontal">
+            <div class="member">[[item.aktifasi]]</div>
+            <div class="member">[[item.nama]]</div>
+            <div class="member">[[item.username]]</div>
+            <div class="member">[[item.tgl]]</div>
+          </paper-item>
+        </a>
+      </template>
+    </iron-list>
+  </div>
+  </app-header-layout>
+    </template>
+
+    <template is="dom-if" if="{{mobile}}">
+      <app-header-layout has-scrolling-region style="width:100%; height:100vh;">
+        <!-- HEADER -->
+        <app-header class="header" slot="header" fixed affects="waterfall">
+          <app-toolbar>
+            <paper-icon-button on-tap="menu" icon="menu"></paper-icon-button>
+            <div main-title>DTS Bintang Motor</div>
+          </app-toolbar>
+        </app-header>
+
+      <div class="content">
+        <iron-list items="[[datapengguna]]" as="item" class="vertical">
+      <template>
+        <a href="#/editpengguna/[[item.id_pengguna]]" tabindex="-1">
+          <paper-item>
+            <paper-item-body two-line>
+            <div>[[item.aktifasi]]</div>
+            <div>[[item.nama]]</div>
+              <!-- <div class="member">[[item.gender]]</div>
+                <div class="member">[[item.kelas]]</div> -->
+          </paper-item-body>
+          <paper-item>
+        </a>
+      </template>
+    </iron-list>
+  </div>
+  </app-header-layout>
+    </template>
+    </template>
+
+
+  <script>
+    class MyPengguna extends Polymer.Element {
+      static get is() { return 'my-pengguna'; }
+
+      static get properties() {
+        return {
+          datapengguna:Object,
+          route:{
+            type:Object,
+            observer:'_reload',
+          },
+        }
+      }
+
+      _reload(e){
+        let path = e.path;
+        let datapengguna= path.split('/');
+        if(datapengguna[1] !== "pengguna"){
+          return;
+        }
+        this.$.ajax.generateRequest();
+      }
+
+      menu(){
+        let myapp = document.querySelector('my-app');
+        let drawer = myapp.shadowRoot.querySelector('#drawer');
+        drawer.open();
+      }
+      add(){
+        window.history.pushState({}, null, '#/editpengguna');
+        window.dispatchEvent(new CustomEvent('location-changed'));
+      }
+
+
+
+      // _onChange(){
+      //   let npm = this.shadowRoot.querySelector('#npm').value;
+      //   this.shadowRoot.querySelector("#outputnpm").innerHTML = npm;
+      // }
+      //
+      // _onChangeNama(){
+      // let nama = this.shadowRoot.querySelector('#nama').value;
+      // this.shadowRoot.querySelector("#outputnama").innerHTML = nama;
+      // }
+      //
+      // _onChangeGender(){
+      //   let gender = this.shadowRoot.querySelector('#gender').value;
+      //   this.shadowRoot.querySelector("#outputgender").innerHTML = gender;
+      // }
+      //
+      //   _onChangeKelas(){
+      //   let kelas = this.shadowRoot.querySelector('#kelas').value;
+      //   this.shadowRoot.querySelector("#outputkelas").innerHTML = kelas;
+      // }
+      handleResponse(e){
+        this.datapengguna = e.detail.response;
+        console.log(this.datapengguna);
+      }
+
+      errorResponse(e){
+        console.log(e);
+      }
+
+    }
+
+    window.customElements.define(MyPengguna.is, MyPengguna);
+  </script>
+</dom-module>

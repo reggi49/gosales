@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/statics/ionicons/css/w3.css">
     <link rel="stylesheet" href="/statics/ionicons/css/ionicons.min.css">
-    <title>FamCost</title>
+    <title>gosales</title>
     <style>
         .hoverbtn:hover {
             font-weight: bold;
@@ -43,11 +43,16 @@
             <tr>
                 <th>Ord</th>
                 <th>Id</th>
-                <th>Electric Amount(KW)</th>
-                <th>Electric Price(VND)</th>
-                <th>Water Amount(M<sup>3</sup>)</th>
-                <th>Water Price(VND)</th>
-                <th>Checked Date</th>
+                <th>Nomor Polisi</th>
+                <th>Tanggal Masuk</th>
+                <th>Merk</th>
+                <th>Tahun</th>
+                <th>Harga Modal</th>
+                <th>Tanggal</th>
+                <th>Supplier</th>
+                <th>Telp</th>
+                <th>Alamat</th>
+                <th>Deskripsi</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -56,13 +61,20 @@
             <tr>
                 <td>#{{addOne $index}}</td>
                 <td>{{$cost.Id}}</td>
-                <td>{{$cost.ElectricAmount}}</td>
-                <td>{{multiplication $cost.ElectricPrice 1000}}</td>
-                <td>{{$cost.WaterAmount}}</td>
-                <td>{{multiplication $cost.WaterPrice 1000}}</td>
-                <td>{{$cost.CheckedDate}}</td>
+                <td>{{$cost.Nopol}}</td>
+                <td>{{$cost.TglMasuk}}</td>
+                <td>{{$cost.Merk}}</td>
+                <td>{{$cost.Tahun}}</td>
+                <td>{{$cost.HargaModal}}</td>
+                <td>{{$cost.HargaJual}}</td>
+                <td>{{$cost.CreateDate}}</td>
+                <td>{{$cost.Suplier}}</td>
+                <td>{{$cost.Telp}}</td>
+                <td>{{$cost.Alamat}}</td>
+                <td>{{$cost.Deskripsi}}</td>
                 <td>
                     <button class="w3-btn w3-teal" onclick="updateCost(this);">Modify</button>
+                    <!-- <a href="/edit?id={{$cost.Id}}"> Modify</a> -->
                     <button class="w3-btn w3-red" onclick="deleteCost(this)">Delete</button>
                 </td>
             </tr>
@@ -84,16 +96,29 @@
             </div>
 
             <form class="w3-container" action="/create" method="post">
-                <label class="w3-label">Electric Amount</label>
-                <input class="w3-input" type="number" name="ElectricAmount" value="100">
-                <label class="w3-label">Electric Price</label>
-                <input class="w3-input" type="number" name="ElectricPrice" value="2.5" step="0.01">
-                <label class="w3-label">Water Amount</label>
-                <input class="w3-input" type="number" name="WaterAmount" value="7">
-                <label class="w3-label">Water Price</label>
-                <input class="w3-input" type="numer" name="WaterPrice" value="16.0" step="0.01">
-                <label class="w3-label">Checked Date</label>
-                <input class="w3-input" type="date" name="CheckedDate" value="2017-01-01">
+                <input type="hidden" name="Id" id="costIdToUpdate">
+                <label class="w3-label">Nopol</label>
+                <input class="w3-input" type="text" name="Nopol" value="">
+                <label class="w3-label">Tanggal Masuk</label>
+                <input class="w3-input" type="text" name="TglMasuk" value="" step="0.01">
+                <label class="w3-label">Merk</label>
+                <input class="w3-input" type="text" name="Merk" value="">
+                <label class="w3-label">Tahun</label>
+                <input class="w3-input" type="text" name="Tahun" value="" step="0.01">
+                <label class="w3-label">Harga Modal</label>
+                <input class="w3-input" type="text" name="HargaModal" value="2017-01-01">
+                <label class="w3-label">Harga Jual</label>
+                <input class="w3-input" type="text" name="HargaJual" value="2017-01-01">
+                <label class="w3-label">Create Date</label>
+                <input class="w3-input" type="text" name="CreateDate" value="2017-01-01">
+                <label class="w3-label">Supplier</label>
+                <input class="w3-input" type="text" name="Suplier" value="2017-01-01">
+                <label class="w3-label">Telp</label>
+                <input class="w3-input" type="text" name="Telp" value="2017-01-01">
+                <label class="w3-label">Alamat</label>
+                <input class="w3-input" type="text" name="Alamat" value="2017-01-01">
+                <label class="w3-label">Deskripsi</label>
+                <input class="w3-input" type="text" name="Deskripsi" value="2017-01-01">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Create</button>
             </form>
         </div>
@@ -111,21 +136,37 @@
                 <span class="w3-closebtn w3-hover-red w3-container w3-padding-8 w3-display-topright"
                       onclick="document.getElementById('edit-form').style.display='none'">&times;</span>
             </div>
-
+             {{range $index, $cost := .}}
             <form class="w3-container" action="/update" method="post">
                 <input type="hidden" name="Id" id="costIdToUpdate">
-                <label class="w3-label">Electric Amount</label>
-                <input class="w3-input" type="number" name="ElectricAmount" value="100">
-                <label class="w3-label">Electric Price</label>
-                <input class="w3-input" type="number" name="ElectricPrice" value="2.5" step="0.01">
-                <label class="w3-label">Water Amount</label>
-                <input class="w3-input" type="number" name="WaterAmount" value="7">
-                <label class="w3-label">Water Price</label>
-                <input class="w3-input" type="number" name="WaterPrice" value="16.0" step="0.01">
-                <label class="w3-label">Checked Date</label>
-                <input class="w3-input" type="date" name="CheckedDate" value="2017-01-01">
+                <label class="w3-label">Nopol</label>
+                <input class="w3-input" type="text" name="Nopol" value="{{$cost.Nopol}}">
+                <label class="w3-label">Tanggal Masuk</label>
+                <input class="w3-input" type="date" name="TglMasuk" value="{{$cost.TglMasuk}}">
+                <label class="w3-label">Merk</label>
+                <input class="w3-input" type="text" name="Merk" value="{{$cost.Merk}}">
+                <label class="w3-label">Tahun</label>
+                <input class="w3-input" type="text" name="Tahun" value="{{$cost.Tahun}}">
+                <label class="w3-label">Harga Modal</label>
+                <input class="w3-input" type="text" name="HargaModal" value="{{$cost.HargaModal}}">
+                <label class="w3-label">Harga Jual</label>
+                <input class="w3-input" type="text" name="HargaJual" value="{{$cost.HargaJual}}">
+                <label class="w3-label">Create Date</label>
+                <input class="w3-input" type="text" name="CreateDate" value="{{$cost.CreateDate}}">
+                <label class="w3-label">Supplier</label>
+                <input class="w3-input" type="text" name="Supplier" value="{{$cost.Suplier}}">
+                <label class="w3-label">Telp</label>
+                <input class="w3-input" type="text" name="Telp" value="{{$cost.Telp}}">
+                <label class="w3-label">Alamat</label>
+                <input class="w3-input" type="text" name="Alamat" value="{{$cost.Alamat}}">
+                <label class="w3-label">Deskripsi</label>
+                <input class="w3-input" type="text" name="Deskripsi" value="{{$cost.Deskripsi}}">
                 <button class="w3-btn w3-teal w3-margin-top w3-margin-bottom w3-right" type="submit">Save</button>
             </form>
+            {{ else }}
+            <h1> Data Not Found </h1>
+            {{ end }}
+             
         </div>
     </div>
 </div>

@@ -6,17 +6,17 @@ import (
 	"net/http"
 	"os"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
-	db  *sql.DB
-	err error
+	db            *sql.DB
+	err           error
 	authenticated = false
 )
 
 func main() {
-	db, err = sql.Open("sqlite3", "db.sqlite3")
+	db, err = sql.Open("mysql", "root@tcp(127.0.0.1:3306)/gosales")
 	if err != nil {
 		panic(err)
 	}
@@ -26,7 +26,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	//os.Setenv("PORT", "8898")
+	os.Setenv("PORT", "8898")
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("$PORT must be set")
@@ -38,6 +38,7 @@ func main() {
 	http.HandleFunc("/register", registerHandler)
 	http.HandleFunc("/list", listHandler)
 	http.HandleFunc("/create", createHandler)
+	http.HandleFunc("/edit", editHandler)
 	http.HandleFunc("/update", updateHandler)
 	http.HandleFunc("/delete", deleteHandler)
 	http.Handle("/statics/",

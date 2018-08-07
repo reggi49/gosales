@@ -1,0 +1,108 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="my-nilai">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      .button{
+        background-color:var(--app-primary-color);
+        color:black;
+
+      }
+
+      .member{
+        width: 100%;
+      }
+
+      .horizontal{
+          @apply --layout-horizontal;
+      }
+    </style>
+
+    <iron-ajax
+    auto
+    url="api/nilai"
+    method="get"
+    handle-as="json"
+    on-response="handleResponse"
+    on-error="errorResponse"></iron-ajax>
+
+
+    <div class="card">
+      <iron-list items="[[NilaiMhs]]" as="item2">
+    <template>
+    <div class="horizontal">
+        <div class="member">[[item2.kode_matkul]]</div>
+        <div class="member">[[item2.nama_matkul]]</div>
+        <div class="member">[[item2.uts]]</div>
+        <div class="member">[[item2.uas]]</div>
+      </div>
+    </template>
+  </iron-list>
+</template>
+</div>
+</template>
+
+  <script>
+    class MyNilai extends Polymer.Element {
+      static get is() { return 'my-nilai'; }
+
+      static get properties() {
+        return {
+          NilaiMhs:Object,
+        }
+      }
+
+      // _onChange(){
+      //   let npm = this.shadowRoot.querySelector('#npm').value;
+      //   this.shadowRoot.querySelector("#outputnpm").innerHTML = npm;
+      // }
+      //
+      // _onChangeNama(){
+      // let nama = this.shadowRoot.querySelector('#nama').value;
+      // this.shadowRoot.querySelector("#outputnama").innerHTML = nama;
+      // }
+      //
+      // _onChangeGender(){
+      //   let gender = this.shadowRoot.querySelector('#gender').value;
+      //   this.shadowRoot.querySelector("#outputgender").innerHTML = gender;
+      // }
+      //
+      //   _onChangeKelas(){
+      //   let kelas = this.shadowRoot.querySelector('#kelas').value;
+      //   this.shadowRoot.querySelector("#outputkelas").innerHTML = kelas;
+      // }
+      handleResponse(e){
+        this.NilaiMhs = e.detail.response;
+        console.log(this.NilaiMhs);
+      }
+
+      errorResponse(e){
+        console.log(e);
+      }
+
+    }
+
+    window.customElements.define(MyNilai.is, MyNilai);
+  </script>
+</dom-module>
