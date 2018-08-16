@@ -36,11 +36,28 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logoutHandler)
 	http.HandleFunc("/register", registerHandler)
+	//persediaan
 	http.HandleFunc("/list", listHandler)
-	http.HandleFunc("/create", createHandler)
-	http.HandleFunc("/edit", editHandler)
-	http.HandleFunc("/update", updateHandler)
+	http.HandleFunc("/createpsdaan", createPersediaanHandler)
+	http.HandleFunc("/editpsdaan", editpsdaanHandler)
+	http.HandleFunc("/updatepsdaan", updatepsdaanHandler)
 	http.HandleFunc("/delete", deleteHandler)
+	//Penjualan
+	http.HandleFunc("/lpenj", lpenjHandler)
+	http.HandleFunc("/cpenj", createPenjHandler)
+	http.HandleFunc("/epenj", editpenjHandler)
+	http.HandleFunc("/upenj", updatepenjHandler)
+	// http.HandleFunc("/delete", deleteHandler)
+	//Pengguna
+	http.HandleFunc("/lpeng", lpengHandler)
+	http.HandleFunc("/cpeng", createPengHandler)
+	http.HandleFunc("/epeng", editpengHandler)
+	http.HandleFunc("/upeng", updatepengHandler)
+	// http.HandleFunc("/delete", deleteHandler)
+
+	http.HandleFunc("/laporan", editpengHandler)
+
+	// //static files
 	http.Handle("/statics/",
 		http.StripPrefix("/statics/", http.FileServer(http.Dir("./statics"))),
 	)

@@ -1,0 +1,158 @@
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"strconv"
+)
+
+func listpenjHandler(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated(w, r)
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusBadRequest)
+	}
+	rows, err := db.Query("SELECT * FROM penjualan")
+	checkInternalServerError(err, w)
+	var funcMap = template.FuncMap{
+		"multiplication": func(n float64, f float64) float64 {
+			return n * f
+		},
+		"addOne": func(n int) int {
+			return n + 1
+		},
+	}
+	var penjualans []Penjualan
+	var penjualan Penjualan
+	for rows.Next() {
+		err = rows.Scan(&penjualan.Id, &penjualan.Nopol, &penjualan.TglKeluar, &penjualan.HargaModal, &penjualan.HargaJual, &penjualan.Suplier)
+		checkInternalServerError(err, w)
+		penjualans = append(penjualans, penjualan)
+	}
+	t, err := template.New("listpenj.html").Funcs(funcMap).ParseFiles("frontend/listpen.html")
+	checkInternalServerError(err, w)
+	err = t.Execute(w, penjualans)
+	checkInternalServerError(err, w)
+
+}
+
+func addPenjualanHandler(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated(w, r)
+	if r.Method != "POST" {
+		http.ServeFile(w, r, "frontend/addpenjualan.html")
+		return
+	}
+}
+
+func createPenjualanHandler(w http.ResponseWriter, r *http.Request) {
+	//isAuthenticated(w, r)
+	if r.Method != "POST" {
+		//http.Redirect(w, r, "/", 301)
+		http.ServeFile(w, r, "frontend/createpenjualan.html")
+		return
+	}
+	var penjualan Penjualan
+	penjualan.Nopol = r.FormValue("Nopol")
+	penjualan.HargaModal, _ = strconv.ParseFloat(r.FormValue("HargaModal"), 64)
+	penjualan.HargaJual, _ = strconv.ParseFloat(r.FormValue("HargaJual"), 64)
+	penjualan.Suplier = r.FormValue("Suplier")
+	fmt.Println(penjualan)
+
+	// Save to database
+	stmt, err := db.Prepare(`
+	INSERT INTO penjualan(id_barang,nopol,tgl_masuk,merk,tahun,harga_modal,harga_jual,create_date,suplier,telp,alamat,
+deskripsi)
+		VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+	`)
+	if err != nil {
+		fmt.Println("Prepare query error")
+		panic(err)
+	}
+	_, err = stmt.Exec(penjualan.Id, penjualan.Nopol, penjualan.HargaModal, penjualan.HargaJual, penjualan.Suplier)
+	if err != nil {
+		fmt.Println("Execute query error")
+		panic(err)
+	}
+	http.Redirect(w, r, "/", 301)
+}
+
+func editpenjHandler(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated(w, r)
+	var funcMap = template.FuncMap{
+		"multiplication": func(n float64, f float64) float64 {
+			return n * f
+		},
+		"addOne": func(n int) int {
+			return n + 1
+		},
+	}
+	id := r.FormValue("id")
+	rows, err := db.Query(
+		`SELECT *
+		FROM penjualan
+		WHERE id_barang = ` + id + `;`)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var penjualans []Penjualan
+	var penjualan Penjualan
+	for rows.Next() {
+		err = rows.Scan(&penjualan.Id, &penjualan.Nopol, &penjualan.TglKeluar, &penjualan.kode_bon, &penjualan.HargaModal, &penjualan.HargaJual, &penjualan.Suplier)
+		checkInternalServerError(err, w)
+		penjualans = append(penjualans, penjualan)
+	}
+	t, err := template.New("editpsdaan.html").Funcs(funcMap).ParseFiles("frontend/editpsdaan.html")
+	checkInternalServerError(err, w)
+	err = t.Execute(w, penjualans)
+	checkInternalServerError(err, w)
+}
+
+func updatepenjHandler(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated(w, r)
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", 301)
+	}
+	_, err := db.Exec(
+		"UPDATE penjualan SET nopol=?, tgl_masuk=?, merk=?, tahun=?, harga_modal=?, harga_jual=?, create_date=?, suplier=?, telp=?, alamat=?, deskripsi=? WHERE id_barang=? ",
+		r.FormValue("Nopol"),
+		r.FormValue("TglMasuk"),
+		r.FormValue("Merk"),
+		r.FormValue("Tahun"),
+		r.FormValue("HargaModal"),
+		r.FormValue("HargaJual"),
+		r.FormValue("CreateDate"),
+		r.FormValue("Suplier"),
+		r.FormValue("Telp"),
+		r.FormValue("Alamat"),
+		r.FormValue("Deskripsi"),
+		r.FormValue("Id"),
+	)
+	fmt.Println(r)
+
+	checkInternalServerError(err, w)
+	http.Redirect(w, r, "/", 301)
+}
+
+func deletepenjHandler(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated(w, r)
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", 301)
+	}
+	var penjualanId, _ = strconv.ParseInt(r.FormValue("id"), 10, 64)
+	fmt.Println(penjualanId)
+	stmt, err := db.Prepare("DELETE FROM penjualan WHERE id_barang=?")
+	checkInternalServerError(err, w)
+	res, err := stmt.Exec(penjualanId)
+	checkInternalServerError(err, w)
+	_, err = res.RowsAffected()
+	checkInternalServerError(err, w)
+	http.Redirect(w, r, "/", 301)
+
+}
+
+func indexpenjHandler(w http.ResponseWriter, r *http.Request) {
+	isAuthenticated(w, r)
+	http.Redirect(w, r, "/list", 301)
+}
