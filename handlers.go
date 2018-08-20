@@ -482,25 +482,28 @@ func updatepengHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", 301)
 }
 
-func laporanHandler(w http.ResponseWriter, r *http.Request) {
+func lappenjHandler(w http.ResponseWriter, r *http.Request) {
 	isAuthenticated(w, r)
 	if r.Method != "POST" {
-		http.Redirect(w, r, "/", 301)
+		http.ServeFile(w, r, "frontend/lappenj.html")
+		return
 	}
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(r.FormValue("Password")), bcrypt.DefaultCost)
 
-	_, err = db.Exec(
-		"UPDATE users SET nama=?, username=?, email=?, password=?, role=? WHERE id=? ",
-		r.FormValue("Nama"),
-		r.FormValue("Username"),
-		r.FormValue("Email"),
-		hashedPassword,
-		r.FormValue("Role"),
-		r.FormValue("Id"),
-	)
+	// grab user info from the submitted form
+	fromdate := r.FormValue("fromdate")
+	todate := r.FormValue("todate")
+	// query database to get match username
+
 	fmt.Println(r)
+	var penjualan Penjualan
+	err := db.QueryRow("SELECT * FROM penjualan WHERE tgl_keluar >= '?' AND tgl_keluar <= '?'", fromdate, todate).Scan(&penjualan.Id, &penjualan.TglKeluar, &penjualan.KodeBon, &penjualan.Nopol, &penjualan.Merk, &penjualan.Suplier, &penjualan.HargaModal, &penjualan.HargaJual)
 	checkInternalServerError(err, w)
-	http.Redirect(w, r, "/", 301)
+	// validate password
+	if err != nil {
+		http.Redirect(w, r, "/login", 301)
+	}
+	authenticated = true
+	http.Redirect(w, r, "/list", 301)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
